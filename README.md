@@ -2,6 +2,9 @@
 
 This Python script provides a convenient way to backup specific Ollama language models installed on your Linux system. It intelligently identifies the model files (blobs and manifests) associated with your chosen models and archives them into a single zip file.
 
+**‌There's no guarantee of service for this project. This project was for my own educational purposes only. You can use this script on your only and only your responsiblity.**
+
+
 ## Features
 
 * **Automatic Ollama Directory Detection:** Automatically locates your Ollama models directory, supporting default paths and the `OLLAMA_MODELS` environment variable.
