@@ -6,11 +6,13 @@ from datetime import datetime
 
 # Global flag to indicate if rsync is available for progress
 RSYNC_AVAILABLE = False
+P7ZIP_AVAILABLE = False
 
 def check_tools_installed():
     """Checks if necessary commands (rsync, pv) are available in the system's PATH."""
     tools = {
         'rsync': shutil.which('rsync') is not None,
+        '7z': shutil.which('7z') is not None
     }
     return tools
 
@@ -152,9 +154,10 @@ def copy_with_sudo(source, destination):
         return False
 
 def main():
-    global RSYNC_AVAILABLE
+    global RSYNC_AVAILABLE, P7ZIP_AVAILABLE
     tools = check_tools_installed()
     RSYNC_AVAILABLE = tools['rsync']
+    P7ZIP_AVAILABLE = tools['7z']
 
     if not RSYNC_AVAILABLE:
         print("Warning: 'rsync' command not found. Copying large files will proceed without a progress bar.")
@@ -268,13 +271,16 @@ def main():
         parent_backup_root_dir = os.path.dirname(backup_root_dir)
         base_backup_root_dir_name = os.path.basename(backup_root_dir)
         
-        # Use 'zip -r' command with sudo
-        zip_cmd = ['sudo', 'zip', '-r', f"{zip_path}.zip", base_backup_root_dir_name]
+        if P7ZIP_AVAILABLE:
+            zip_cmd = ['sudo', '7z', 'a', f"{zip_path}.zip", base_backup_root_dir_name]
+        else:
+            print("7z Unavailable. Using zip...")
+            zip_cmd = ['sudo', 'zip', '-r', f"{zip_path}.zip", base_backup_root_dir_name]
         
         print(f"Executing: {' '.join(zip_cmd)} from {parent_backup_root_dir}")
         
         # Execute the zip command from the parent directory
-        subprocess.run(zip_cmd, cwd=parent_backup_root_dir, check=True, capture_output=True, text=True)
+        subprocess.run(zip_cmd, cwd=parent_backup_root_dir, check=True, text=True)
         
         print(f"\nBackup complete! Zip file created at: {zip_path}.zip")
     except subprocess.CalledProcessError as e:
